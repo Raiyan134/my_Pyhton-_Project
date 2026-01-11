@@ -1,0 +1,65 @@
+import random
+
+def get_computer_choice():
+    """Computer randomly selects using ASCII string values
+    '82'=Rock, '80'=Paper, '83'=Scissors"""
+    choices = ['82', '80', '83']
+    return random.choice(choices)
+
+def ascii_string_to_name(ascii_str):
+    """Convert ASCII string value to choice name"""
+    if ascii_str == '82':
+        return "Rock"
+    elif ascii_str == '80':
+        return "Paper"
+    elif ascii_str == '83':
+        return "Scissors"
+
+def determine_winner(player, computer):
+    """Determine winner using ASCII string values
+    '82' (Rock) beats '83' (Scissors)
+    '80' (Paper) beats '82' (Rock)
+    '83' (Scissors) beats '80' (Paper)"""
+    if player == computer:
+        return "It's a tie!"
+    elif (player == '82' and computer == '83') or \
+         (player == '80' and computer == '82') or \
+         (player == '83' and computer == '80'):
+        return "You win!"
+    else:
+        return "Computer wins!"
+
+def play_game():
+    """Main game function"""
+    print("=== Rock, Paper, Scissors (ASCII String Version) ===")
+    print("\nChoices using ASCII string values:")
+    print("'82' = Rock (ASCII of 'R')")
+    print("'80' = Paper (ASCII of 'P')")
+    print("'83' = Scissors (ASCII of 'S')")
+    print("'81' = Quit (ASCII of 'Q')")
+    
+    while True:
+        choice = input("\nEnter ASCII string (82, 80, 83, or 81): ")
+        
+        if choice == '81':
+            print("Thanks for playing! Goodbye!")
+            break
+        
+        if choice not in ['82', '80', '83']:
+            print("Invalid choice! Please enter '82', '80', '83', or '81'.")
+            continue
+        
+        # Get computer's choice
+        computer_choice = get_computer_choice()
+        
+        # Display choices
+        print(f"\nYou chose: '{choice}' = {ascii_string_to_name(choice)}")
+        print(f"Computer chose: '{computer_choice}' = {ascii_string_to_name(computer_choice)}")
+        
+        # Determine and display winner
+        result = determine_winner(choice, computer_choice)
+        print(f"\n{result}")
+        print("-" * 45)
+
+if __name__ == "__main__":
+    play_game()
