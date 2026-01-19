@@ -1,0 +1,133 @@
+import os
+
+# ASCII Art Logo
+logo = '''
+                         ___________
+                         \         /
+                          )_______(
+                          |"""""""|_.-._,.---------.,_.-._
+                          |       | | |               | | ''-.
+                          |       |_| |_             _| |_..-'
+                          |_______| '-' `'---------'` '-'
+                          )"""""""(
+                         /_________\\
+                       .-------------.
+                      /_______________\\
+
+        ██████╗ ██╗     ██╗███╗   ██╗██████╗ 
+        ██╔══██╗██║     ██║████╗  ██║██╔══██╗
+        ██████╔╝██║     ██║██╔██╗ ██║██║  ██║
+        ██╔══██╗██║     ██║██║╚██╗██║██║  ██║
+        ██████╔╝███████╗██║██║ ╚████║██████╔╝
+        ╚═════╝ ╚══════╝╚═╝╚═╝  ╚═══╝╚═════╝ 
+
+        █████╗ ██╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗
+       ██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║
+       ███████║██║   ██║██║        ██║   ██║██║   ██║██╔██╗ ██║
+       ██╔══██║██║   ██║██║        ██║   ██║██║   ██║██║╚██╗██║
+       ██║  ██║╚██████╔╝╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║
+       ╚═╝  ╚═╝ ╚═════╝  ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
+'''
+
+
+def clear_screen():
+    """Clear the console screen"""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def display_logo():
+    """Display the auction logo"""
+    print(logo)
+    print("=" * 70)
+    print(" " * 15 + "Welcome to the Blind Auction!")
+    print("=" * 70)
+
+
+def find_highest_bidder(bidding_dictionary):
+    """Find the winner of the auction"""
+    highest_bid = 0
+    winner = ""
+
+    for bidder in bidding_dictionary:
+        bid_amount = bidding_dictionary[bidder]
+        if bid_amount > highest_bid:
+            highest_bid = bid_amount
+            winner = bidder
+
+    return winner, highest_bid
+
+
+def get_valid_bid():
+    """Get a valid bid amount from user"""
+    while True:
+        try:
+            bid = float(input("What is your bid? $"))
+            if bid <= 0:
+                print("Please enter a positive bid amount.")
+                continue
+            return bid
+        except ValueError:
+            print("Invalid input! Please enter a valid number.")
+
+
+def blind_auction():
+    """Main blind auction program"""
+    clear_screen()
+    display_logo()
+
+    bids = {}
+    continue_bidding = True
+
+    while continue_bidding:
+        print("\n" + "-" * 70)
+        name = input("What is your name? ").strip()
+
+        if not name:
+            print("Name cannot be empty!")
+            continue
+
+        bid = get_valid_bid()
+
+        # Store the bid
+        bids[name] = bid
+        print(f"\nBid recorded for {name}!")
+
+        # Ask if there are more bidders
+        print("\n" + "-" * 70)
+        more_bidders = input("Are there any other bidders? Type 'yes' or 'no': ").lower()
+
+        if more_bidders == "no":
+            continue_bidding = False
+        elif more_bidders == "yes":
+            clear_screen()
+            display_logo()
+        else:
+            print("Invalid input. Assuming 'no'.")
+            continue_bidding = False
+
+    # Find and announce the winner
+    clear_screen()
+    display_logo()
+
+    winner, winning_bid = find_highest_bidder(bids)
+
+    print("\n" + "=" * 70)
+    print(" " * 25 + "AUCTION RESULTS")
+    print("=" * 70)
+    print(f"\n🏆 The winner is: {winner}")
+    print(f"💰 Winning bid: ${winning_bid:.2f}")
+    print("\n" + "=" * 70)
+
+    # Display all bids
+    print("\nAll Bids:")
+    print("-" * 70)
+    sorted_bids = sorted(bids.items(), key=lambda x: x[1], reverse=True)
+    for i, (bidder, amount) in enumerate(sorted_bids, 1):
+        print(f"{i}. {bidder}: ${amount:.2f}")
+    print("-" * 70)
+    print("\nThank you for participating in the Blind Auction!")
+
+
+# Run the auction
+if __name__ == "__main__":
+    blind_auction()
