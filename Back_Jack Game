@@ -1,0 +1,248 @@
+import random
+import os
+import time
+
+
+class Card:
+    """Represents a playing card"""
+
+    def __init__(self, suit, rank):
+        self.suit = suit
+        self.rank = rank
+
+    def __str__(self):
+        return f"{self.rank} of {self.suit}"
+
+    def get_value(self):
+        """Returns the blackjack value of the card"""
+        if self.rank in ['Jack', 'Queen', 'King']:
+            return 10
+        elif self.rank == 'Ace':
+            return 11
+        else:
+            return int(self.rank)
+
+
+class Deck:
+    """Represents a deck of cards"""
+
+    def __init__(self):
+        self.cards = []
+        suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+        ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace']
+
+        for suit in suits:
+            for rank in ranks:
+                self.cards.append(Card(suit, rank))
+
+    def shuffle(self):
+        """Shuffles the deck"""
+        random.shuffle(self.cards)
+
+    def deal(self):
+        """Deals a card from the deck"""
+        return self.cards.pop()
+
+
+class Hand:
+    """Represents a hand of cards"""
+
+    def __init__(self):
+        self.cards = []
+        self.value = 0
+        self.aces = 0
+
+    def add_card(self, card):
+        """Adds a card to the hand"""
+        self.cards.append(card)
+        self.value += card.get_value()
+        if card.rank == 'Ace':
+            self.aces += 1
+        self.adjust_for_ace()
+
+    def adjust_for_ace(self):
+        """Adjusts value if there are aces and total is over 21"""
+        while self.value > 21 and self.aces:
+            self.value -= 10
+            self.aces -= 1
+
+    def __str__(self):
+        hand_str = ""
+        for card in self.cards:
+            hand_str += f"  {card}\n"
+        return hand_str
+
+
+class BlackJackGame:
+    """Main game class"""
+
+    def __init__(self):
+        self.deck = Deck()
+        self.player_hand = Hand()
+        self.dealer_hand = Hand()
+        self.player_chips = 1000
+        self.bet = 0
+
+    def clear_screen(self):
+        """Clears the console screen"""
+        os.system('cls' if os.name == 'nt' else 'clear')
+
+    def display_header(self):
+        """Displays game header"""
+        print("=" * 50)
+        print("🎰  BLACKJACK GAME  🎰".center(50))
+        print("=" * 50)
+        print(f"Your Chips: ${self.player_chips}")
+        print("=" * 50)
+
+    def take_bet(self):
+        """Takes bet from player"""
+        while True:
+            try:
+                self.bet = int(input(f"\nHow much would you like to bet? (1-{self.player_chips}): $"))
+                if 1 <= self.bet <= self.player_chips:
+                    break
+                else:
+                    print(f"Invalid bet! Please bet between $1 and ${self.player_chips}")
+            except ValueError:
+                print("Please enter a valid number!")
+
+    def show_some(self):
+        """Shows dealer's first card hidden"""
+        print("\n" + "=" * 50)
+        print("DEALER'S HAND:")
+        print("  <hidden card>")
+        print(f"  {self.dealer_hand.cards[1]}")
+        print("\nYOUR HAND:", f"(Value: {self.player_hand.value})")
+        print(self.player_hand)
+
+    def show_all(self):
+        """Shows all cards"""
+        print("\n" + "=" * 50)
+        print("DEALER'S HAND:", f"(Value: {self.dealer_hand.value})")
+        print(self.dealer_hand)
+        print("YOUR HAND:", f"(Value: {self.player_hand.value})")
+        print(self.player_hand)
+
+    def player_busts(self):
+        """Player busts"""
+        print("💥 BUST! You went over 21!")
+        self.player_chips -= self.bet
+
+    def player_wins(self):
+        """Player wins"""
+        print("🎉 YOU WIN!")
+        self.player_chips += self.bet
+
+    def dealer_busts(self):
+        """Dealer busts"""
+        print("💥 Dealer busts! YOU WIN!")
+        self.player_chips += self.bet
+
+    def dealer_wins(self):
+        """Dealer wins"""
+        print("😞 Dealer wins!")
+        self.player_chips -= self.bet
+
+    def push(self):
+        """Tie game"""
+        print("🤝 It's a tie! Push.")
+
+    def hit_or_stand(self):
+        """Asks player to hit or stand"""
+        while True:
+            choice = input("\nWould you like to [H]it or [S]tand? ").lower()
+            if choice in ['h', 'hit']:
+                return 'hit'
+            elif choice in ['s', 'stand']:
+                return 'stand'
+            else:
+                print("Invalid choice! Please enter 'H' or 'S'")
+
+    def play_round(self):
+        """Plays one round of blackjack"""
+        # Shuffle and deal
+        self.deck = Deck()
+        self.deck.shuffle()
+        self.player_hand = Hand()
+        self.dealer_hand = Hand()
+
+        # Initial deal
+        self.player_hand.add_card(self.deck.deal())
+        self.dealer_hand.add_card(self.deck.deal())
+        self.player_hand.add_card(self.deck.deal())
+        self.dealer_hand.add_card(self.deck.deal())
+
+        # Take bet
+        self.clear_screen()
+        self.display_header()
+        self.take_bet()
+
+        # Show cards
+        self.show_some()
+
+        # Player's turn
+        playing = True
+        while playing:
+            action = self.hit_or_stand()
+
+            if action == 'hit':
+                self.player_hand.add_card(self.deck.deal())
+                self.show_some()
+
+                if self.player_hand.value > 21:
+                    self.show_all()
+                    self.player_busts()
+                    playing = False
+            else:
+                print("Player stands. Dealer's turn.")
+                playing = False
+
+        # Dealer's turn
+        if self.player_hand.value <= 21:
+            time.sleep(1)
+            while self.dealer_hand.value < 17:
+                print(f"\nDealer hits...")
+                time.sleep(1)
+                self.dealer_hand.add_card(self.deck.deal())
+                self.show_all()
+
+            # Determine winner
+            if self.dealer_hand.value > 21:
+                self.dealer_busts()
+            elif self.dealer_hand.value > self.player_hand.value:
+                self.dealer_wins()
+            elif self.dealer_hand.value < self.player_hand.value:
+                self.player_wins()
+            else:
+                self.push()
+
+        # Show final chip count
+        print(f"\nYour chips: ${self.player_chips}")
+
+    def play(self):
+        """Main game loop"""
+        print("\n🎰 Welcome to BlackJack! 🎰\n")
+        print("Get as close to 21 as you can without going over!")
+        print("Dealer hits until reaching 17.")
+        print("Aces count as 1 or 11.\n")
+        input("Press Enter to start...")
+
+        while self.player_chips > 0:
+            self.play_round()
+
+            if self.player_chips <= 0:
+                print("\n💔 You're out of chips! Game Over!")
+                break
+
+            play_again = input("\nPlay another round? [Y/N]: ").lower()
+            if play_again not in ['y', 'yes']:
+                break
+
+        print(f"\n🎮 Thanks for playing! Final chips: ${self.player_chips}")
+
+
+# Run the game
+if __name__ == "__main__":
+    game = BlackJackGame()
+    game.play()
